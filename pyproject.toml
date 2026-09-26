@@ -1,0 +1,92 @@
+[build-system]
+requires = ["uv_build >= 0.11.6, <1"]
+build-backend = "uv_build"
+
+[project]
+name = "poe-tasks-common"
+version = "1.0.0"
+description = "An opinionated collection of common poe tasks"
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Jonathan King" },
+]
+maintainers = [
+    {name = "Jonathan King" },
+]
+keywords = [
+    "poethepoet",
+    "poe",
+    "ruff",
+    "pytest",
+    "coverage",
+    "sphinx",
+    "pip-audit",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[dependency-groups]
+tooling = ["poethepoet"]
+hooks = ["pre-commit"]
+security = ["pip-audit"]
+lint = ["ruff"]
+test = ["pytest>=9", "coverage>=7.10", "pytest-cov", "pytest-issues"]
+docs = [
+    "sphinx>=8.1",
+    "furo>=2025.12",
+    "sphinx_design>=0.6",
+    "sphinx-copybutton>=0.5",
+    "sphinx-substitution-extensions>=2025.12",
+]
+
+[project.urls]
+Repository = "https://github.com/JonKing93/poe-tasks-common"
+Documentation = "https://poe-common-tasks.readthedocs.io"
+
+
+#####
+# Dev Tool Configurations
+#####
+
+[tool.uv.build-backend]
+module-root = "src"
+
+[tool.poe]
+include_script = "poe_tasks_common:tasks"
+executor = "uv"
+
+[tool.ruff.lint]
+select = [
+    "I", # isort
+    "E", # pycodestyle
+    "F", # PyFlakes
+    "B", # flake8-bugbear
+    "UP", # pyupgrade
+    "SIM", # flake8-simplify
+    "RUF", # ruff
+    "S",  # flake8-bandit
+    "T",  # flake8-print
+]
+ignore = ["RUF022", "SIM108", "SIM300", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"__init__.py" = ["F401"]
+
