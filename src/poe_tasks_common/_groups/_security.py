@@ -1,15 +1,13 @@
-"Defines tasks in the security testing group"
+"Task group for security testing"
 
-from poe_tasks_common._utils import group
+from poe_tasks_common._format import group, task
 
-audit = {
-    "help": "Check package dependencies for security issues",
-    "cmd": "pip-audit",
-}
+audit = task(
+    "Check package dependencies for security issues",
+    cmd="pip-audit",
+)
 
 GROUP = group(
     "Security:",
-    {
-        "audit": audit,
-    },
+    audit=audit,
 )

@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "poe-tasks-common"
-version = "1.0.0"
+version = "0.2.0"
 description = "An opinionated collection of common poe tasks"
 license = "MIT"
 readme = "README.md"
@@ -18,14 +18,16 @@ maintainers = [
 keywords = [
     "poethepoet",
     "poe",
+    "uv",
+    "pre-commit",
+    "pip-audit",
     "ruff",
     "pytest",
     "coverage",
     "sphinx",
-    "pip-audit",
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Natural Language :: English",
@@ -58,7 +60,7 @@ docs = [
 
 [project.urls]
 Repository = "https://github.com/JonKing93/poe-tasks-common"
-Documentation = "https://poe-common-tasks.readthedocs.io"
+Documentation = "https://jonking93.github.io/poe-tasks-common"
 
 
 #####
@@ -89,4 +91,3 @@ ignore = ["RUF022", "SIM108", "SIM300", "E501"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
 "__init__.py" = ["F401"]
-

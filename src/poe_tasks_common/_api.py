@@ -1,5 +1,5 @@
 """
-Function that collects and returns all the task groups
+Function that collects and returns the complete poe schema
 """
 
 from __future__ import annotations
@@ -7,105 +7,98 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from poe_tasks_common import _groups
+from poe_tasks_common._groups import GROUPS
+from poe_tasks_common._utilities import TASKS as UTILITIES
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    Strings = list[str] | tuple[str, ...]
 
 
 def tasks(
     *,
-    include_tasks: list[str] | None = None,
-    exclude_tasks: list[str] | None = None,
-    include_tags: list[str] | None = None,
-    exclude_tags: list[str] | None = None,
-):
-    "Collects and returns the task groups"
+    exclude_tasks: Strings = (),
+    include_tasks: Strings = (),
+    exclude_groups: Strings = (),
+    include_groups: Strings = (),
+) -> dict:
+    """
+    Builds, filters, and exports a task schema
 
-    return {"groups": _groups.GROUPS}
+    tasks()
+    Builds and returns the complete task schema dict.
 
-    # # Collect the task groups
-    # groups = {
-    #     "a_security": _security.GROUP,
-    #     "b_lint": _lint.GROUP,
-    #     "c_test": _test.GROUP,
-    #     "d_browse": _browse.GROUP,
-    # }
-    # # groups = deepcopy(groups)
+    tasks(*, exclude_tasks)
+    tasks(*, include_tasks)
+    tasks(*, exclude_groups)
+    tasks(*, include_groups)
+    Returns a filtered schema dict. Use these options to select which tasks are
+    included in the final schema. Use `include_tasks` or `exclude_tasks` to filter
+    by specific task names. Use `include_groups` or `exclude_groups` to filter by
+    task groups. Each provided filter should be a sequence of strings. When multiple
+    filters are provided, they are have the following priority:
 
-    # # # Filter by task names and tags
-    # # _filter(groups, include_tasks, exclude_tasks, _matches_name)
-    # # _filter(groups, include_tags, exclude_tags, _matches_tag)
+        exclude_tasks > include_tasks > exclude_groups > include_groups
 
-    # # # Strip the tags (not part of the poe schema)
-    # # _strip_tags(groups)
-    # return {"groups": groups}
+    In brief, task filters take priority over group filters, and excludes have priority
+    over includes. Note that providing an "include" filter activates opt-in
+    behavior - only the included tasks are exported, all others are discarded.
 
+    Args:
+        exclude_tasks: Specific tasks that should be excluded from the schema
+        include_tasks: Specific tasks that should be included in the schema
+        exclude_groups: Task groups that should be excluded from the schema
+        include_groups: Tasks groups that should be included in the schema
 
-def _matches_name(task_name: str, _, tasks: list[str]) -> bool:
-    "True if a task matches a list of tasks"
-    return task_name in tasks
+    Returns:
+        dict: The poe task schema
+    """
 
-
-def _matches_tag(_, task: dict, tags: list[str]) -> bool:
-    "True if a task matches a list of tags"
-
-    for tag in task["tags"]:
-        if tag in tags:
-            return True
-    return False
+    filtered_groups = _filter(
+        GROUPS, include_tasks, exclude_tasks, include_groups, exclude_groups
+    )
+    return {
+        "tasks": deepcopy(UTILITIES),
+        "groups": deepcopy(filtered_groups),
+    }
 
 
 def _filter(
-    groups: dict,
-    include: list[str] | None,
-    exclude: list[str] | None,
-    ismatch: Callable,
+    all_groups: dict,
+    include_tasks: Strings,
+    exclude_tasks: Strings,
+    include_groups: Strings,
+    exclude_groups: Strings,
 ):
-    "Applies includes/excludes for a given type of filter"
+    "Additively builds a filtered group dict"
 
-    if include is not None:
-        _filter_low(groups, include, ismatch, default_keep=False)
-    if exclude is not None:
-        _filter_low(groups, exclude, ismatch, default_keep=True)
+    # Determine whether tasks are opt-in or opt-out.
+    # Default is opt-out. Opt-in is triggered if an inclusion group is provided
+    is_opt_out = not (include_tasks or include_groups)
 
+    # Check baseline group eligibility
+    groups = {}
+    for group_name, group in all_groups.items():
+        group_id = group_name.split("_", maxsplit=1)[1]
+        keep_group = (
+            is_opt_out or group_id in include_groups or group_name in include_groups
+        )
+        if group_id in exclude_groups or group_name in exclude_groups:
+            keep_group = False
 
-def _filter_low(
-    groups: dict, filters: list[str], ismatch: Callable, default_keep: bool
-):
-    "Filters tasks"
-
-    # Iterate through task groups
-    empty_groups = []
-    for group_name, group in groups.items():
-        remove_tasks = []
-
-        # Mark tasks that match the filter
+        # Determine the eligibility of tasks within the group
+        tasks = {}
         for task_name, task in group["tasks"].items():
-            keep = default_keep
-            if ismatch(task_name, task, filters):
-                keep = not keep
+            keep_task = keep_group
+            if task_name in include_tasks:
+                keep_task = True
+            if task_name in exclude_tasks:
+                keep_task = False
 
-            # Remove tasks as needed
-            if not keep:
-                remove_tasks.append(task_name)
-        _delete(remove_tasks, group["tasks"])
+            # Save any tasks that are eligible
+            if keep_task:
+                tasks[task_name] = task
 
-        # Remove groups that have no tasks remaining
-        if len(group) == 0:
-            empty_groups.append(group_name)
-    _delete(empty_groups, groups)
-
-
-def _delete(keys: list[str], adict: dict):
-    "Removes multiple keys from a dict"
-    for key in keys:
-        del adict[key]
-
-
-def _strip_tags(groups: dict):
-    "Removes tags from filtered tasks"
-
-    for group in groups.values():
-        for task in group["tasks"].values():
-            del task["tags"]
+        # Only save groups that have tasks
+        if tasks:
+            groups[group_name] = {"heading": group["heading"], "tasks": tasks}
+    return groups

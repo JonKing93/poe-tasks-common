@@ -1,51 +1,49 @@
-"Defines tasks in the testing group"
+"Task group for testing"
 
-from poe_tasks_common._utils import group
+from poe_tasks_common._format import group, task
 
-coverage = {
-    "help": "Prints the coverage report for the tests",
-    "cmd": "coverage report",
-}
+coverage = task(
+    "Prints the coverage report for the tests",
+    cmd="coverage report",
+)
 
-tests = {
-    "help": "Runs the tests and requires a certain coverage",
-    "sequence": [
+tests = task(
+    "Runs the tests and requires a minimum coverage",
+    sequence=[
         {
             "cmd": (
-                "pytest ${POE_ROOT}/tests "
-                "--cov=${POE_ROOT}/src --cov=${POE_ROOT}/tests "
-                "--cov-fail-under=${min-coverage} "
+                "pytest tests "
+                "--cov=src --cov=tests "
+                "--cov-fail-under=${_min_coverage} "
                 "--cov-report xml:coverage.xml"
             )
         },
         {"ref": "coverage"},
     ],
-    "args": [
+    args=[
         {
-            "name": "min-coverage",
+            "name": "_min_coverage",
             "help": "Minimum required test coverage percent",
-            "options": ["--cov-fail-under"],
+            "options": ["--min-coverage"],
             "type": "string",
-            "default": "100",
+            "default": "${MIN_COVERAGE:-100}",
         }
     ],
-}
+)
 
-htmlcov = {
-    "help": "Builds an HTML coverage report and opens in a web browser",
-    "sequence": [
-        {"ref": "rmtree htmlcov"},
+htmlcov = task(
+    "Builds an HTML coverage report and opens in a web browser",
+    sequence=[
+        {"ref": "_rmtree htmlcov"},
         {"cmd": "coverage html --skip-covered"},
-        {"ref": "browse-index htmlcov"},
-    ]
-}
+        {"ref": "_browse-index htmlcov"},
+    ],
+)
 
 
 GROUP = group(
     "Testing:",
-    {
-        "tests": tests,
-        "htmlcov": htmlcov,
-        "coverage": coverage,
-    },
+    tests=tests,
+    htmlcov=htmlcov,
+    coverage=coverage,
 )
