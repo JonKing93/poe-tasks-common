@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "poe-tasks-common"
-version = "0.2.0"
+version = "0.3.0"
 description = "An opinionated collection of common poe tasks"
 license = "MIT"
 readme = "README.md"
