@@ -17,7 +17,7 @@ The [poe](https://poethepoet.natn.io/index.html) task runner allows developers t
 
 By adding `poe-tasks-common` to a `pyproject.toml` file, you gain immediate access to commands like:
 
-```python
+```
 # Checks for security vulnerabilities
 poe audit
 

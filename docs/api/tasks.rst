@@ -495,7 +495,7 @@ Task definition::
 
     [tool.poe.tasks._browse-file]
     help = "Opens a project file in a web browser"
-    expr = "webbrowser.open( pathlib.Path(_path).as_uri() )"
+    expr = "webbrowser.open( pathlib.Path(_path).resolve().as_uri() )"
     imports = ["webbrowser", "pathlib"]
 
         [[tool.poe.tasks._browse-file.args]]

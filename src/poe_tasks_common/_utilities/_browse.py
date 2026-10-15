@@ -18,7 +18,7 @@ browse = task(
 
 browse_file = task(
     "Opens a project file in a web browser",
-    expr="webbrowser.open( pathlib.Path(_path).as_uri() )",
+    expr="webbrowser.open( pathlib.Path(_path).resolve().as_uri() )",
     imports=["webbrowser", "pathlib"],
     args=[
         {
